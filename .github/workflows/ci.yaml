@@ -22,7 +22,7 @@ jobs:
       - name: Get package dependencies
         run: flutter pub get
       - name: Analyze package
-        run: flutter analyze
+        run: flutter analyze --fatal-infos
       - name: Run package tests with coverage
         run: flutter test --coverage
       - name: Check coverage

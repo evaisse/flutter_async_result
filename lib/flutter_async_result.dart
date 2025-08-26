@@ -252,12 +252,12 @@ class AsyncResultNotifier<T extends Object, E extends Exception>
 
 extension _CastOrExtension<FROM> on FROM {
   TO? let<TO extends Object>(TO? Function(FROM value) func) {
-    final that = this;
+    final that = tryCast<FROM>(this);
     return that != null ? func(that) : null;
   }
 }
 
-TO? tryCast<TO extends Object>(Object? input) {
+TO? tryCast<TO extends Object?>(Object? input) {
   if (input is TO) {
     return input;
   } else {

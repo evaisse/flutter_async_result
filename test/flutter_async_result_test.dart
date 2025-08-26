@@ -9,28 +9,47 @@ void main() {
     test("Equality and hashCode", () {
       const ok1 = AsyncResult<String, Exception>.ok("data");
       const ok2 = AsyncResult<String, Exception>.ok("data");
+      const ok3 = AsyncResult<String, Exception>.ok("different data");
       final error1 = AsyncResult<String, Exception>.error(Exception("e"));
       final error2 = AsyncResult<String, Exception>.error(Exception("e"));
+      final error3 = AsyncResult<String, Exception>.error(Exception("e2"));
+      final error4 = AsyncResult<String, Exception>.error(Exception("e"), value: "stale");
+      final sharedException = Exception("shared");
+      final error5 = AsyncResult<String, Exception>.error(sharedException, value: "a");
+      final error6 = AsyncResult<String, Exception>.error(sharedException, value: "a");
+      final error7 = AsyncResult<String, Exception>.error(sharedException, value: "b");
       const loading1 = AsyncResult<String, Exception>.loading();
       const loading2 = AsyncResult<String, Exception>.loading();
+      const loading3 = AsyncResult<String, Exception>.loading(value: "data");
       const empty1 = AsyncResult<String, Exception>.empty();
       const empty2 = AsyncResult<String, Exception>.empty();
       const loadingMore1 = AsyncResult<String, Exception>.loadingMore("data");
       const loadingMore2 = AsyncResult<String, Exception>.loadingMore("data");
+      const loadingMore3 = AsyncResult<String, Exception>.loadingMore("different data");
+      final loadingMore4 = AsyncResult<String, Exception>.loadingMore("data", error: Exception("e"));
 
       expect(ok1, equals(ok2));
       expect(ok1.hashCode, equals(ok2.hashCode));
+      expect(ok1, isNot(equals(ok3)));
 
       expect(error1, isNot(equals(error2))); // Exceptions with same message are not equal
+      expect(error1, isNot(equals(error3)));
+      expect(error1, isNot(equals(error4)));
+      expect(error5, equals(error6));
+      expect(error5.hashCode, equals(error6.hashCode));
+      expect(error5, isNot(equals(error7)));
 
       expect(loading1, equals(loading2));
       expect(loading1.hashCode, equals(loading2.hashCode));
+      expect(loading1, isNot(equals(loading3)));
 
       expect(empty1, equals(empty2));
       expect(empty1.hashCode, equals(empty2.hashCode));
       
       expect(loadingMore1, equals(loadingMore2));
       expect(loadingMore1.hashCode, equals(loadingMore2.hashCode));
+      expect(loadingMore1, isNot(equals(loadingMore3)));
+      expect(loadingMore1, isNot(equals(loadingMore4)));
     });
   });
 
@@ -161,6 +180,46 @@ void main() {
       await Future.delayed(Duration.zero);
       controller.addError(Exception("stream error"));
       await controller.close();
+    });
+
+    group("handleAsyncSnapshot", () {
+      test("handles ConnectionState.none", () {
+        const snapshot = AsyncSnapshot<String>.nothing();
+        notifier.handleAsyncSnapshot(snapshot);
+        expect(notifier.value, isA<Empty>());
+      });
+
+      test("handles ConnectionState.waiting without data", () {
+        const snapshot = AsyncSnapshot<String>.waiting();
+        notifier.handleAsyncSnapshot(snapshot);
+        expect(notifier.value, isA<Loading>());
+      });
+
+      test("handles ConnectionState.waiting with data (for LoadingMore)", () {
+        final snapshot = AsyncSnapshot<String>.withData(ConnectionState.waiting, "stale data");
+        notifier.handleAsyncSnapshot(snapshot);
+        expect(notifier.value, isA<LoadingMore>());
+        expect((notifier.value as LoadingMore).value, "stale data");
+      });
+
+      
+
+      test("handles ConnectionState.done with data", () {
+        final snapshot = const AsyncSnapshot<String>.withData(ConnectionState.done, "new data");
+        notifier.handleAsyncSnapshot(snapshot);
+        expect(notifier.value, isA<Ok>());
+        expect((notifier.value as Ok).value, "new data");
+      });
+
+      
+
+      test("handles ConnectionState.done with error", () {
+        final error = Exception("test error");
+        final snapshot = AsyncSnapshot<String>.withError(ConnectionState.done, error);
+        notifier.handleAsyncSnapshot(snapshot);
+        expect(notifier.value, isA<Error>());
+        expect((notifier.value as Error).error, error);
+      });
     });
   });
 }
