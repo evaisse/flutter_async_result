@@ -26,10 +26,11 @@ jobs:
       - name: Run package tests with coverage
         run: flutter test --coverage
       - name: Check coverage
-        uses: verygoodopensource/very-good-coverage@v3
+        uses: VeryGoodOpenSource/very_good_coverage@v2
         with:
-          path: coverage/lcov.info
+          path: '/coverage/lcov.info'
           min_coverage: 100
+#          exclude: '**/*_observer.dart **/change.dart'
 
   test_example:
     name: Test Example App
