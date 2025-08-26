@@ -24,8 +24,14 @@ jobs:
         run: flutter --version
       - name: Get package dependencies
         run: flutter pub get
+      - name: Get example dependencies
+        run: flutter pub get
+        working-directory: ./example
       - name: Analyze package
         run: flutter analyze --fatal-infos
+      - name: Analyze example
+        run: flutter analyze --fatal-infos
+        working-directory: ./example
       - name: Run package tests with coverage
         run: flutter test --coverage
       - name: Check coverage
