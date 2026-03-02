@@ -19,7 +19,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: "stable"
-          flutter-version: 3.35.2
+          flutter-version: 3.38.9
       - name: dart version
         run: dart --version
       - name: flutter version
@@ -39,7 +39,7 @@ jobs:
       - name: Check coverage
         uses: VeryGoodOpenSource/very_good_coverage@v2
         with:
-          path: '/coverage/lcov.info'
+          path: 'coverage/lcov.info'
           min_coverage: 100
 #          exclude: '**/*_observer.dart **/change.dart'
       - name: Run example tests
